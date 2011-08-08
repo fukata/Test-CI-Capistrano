@@ -6,6 +6,7 @@ set :application, "CapistranoTest"
 set :repository,  "git://github.com/fukata/Test-CI-Capistrano.git"
 
 set :scm, :git
+set :deploy_via, :copy
 # Or: `accurev`, `bzr`, `cvs`, `darcs`, `git`, `mercurial`, `perforce`, `subversion` or `none`
 
 set :user, "ubuntu"
@@ -57,17 +58,41 @@ namespace :memcache do
 end
 
 def diff_source
-	set :diff_exclude, ".git"
+	set :diff_prev, ENV['DIFF_PREV']
+	set :diff_current, ENV['DIFF_CURRENT']
+	set :diff_scm_exclude, ENV['DIFF_SCM_EXCLUDE'] || ".git"
+	set :diff_local_exclude, ENV['DIFF_LOCAL_EXCLUDE'] || "--exclude=.git --exclude=REVISION --exclude=log"
+	return unless ! ENV['DIFF'] || 1
+
 	run <<-CMD
 		echo 'finalize_update';
-		localdiff="$(diff -ru --exclude=#{diff_exclude} #{previous_release} #{latest_release})";
-		if [ "$localdiff" != "" ]; then
+
+		# initialize
+		latest=$(basename "#{latest_release}");
+		cp -R #{latest_release} /tmp/${latest}_#{diff_current};
+		cp -R #{latest_release} /tmp/${latest}_#{diff_prev};
+		cd /tmp/${latest}_#{diff_prev};
+		git checkout -f #{diff_prev} 2>&1 >> /dev/null;
+
+		# diff
+		cd /tmp;
+		scmdiff="$(diff -ru #{diff_local_exclude} /tmp/${latest}_#{diff_prev} /tmp/${latest}_#{diff_current}| egrep -v '^diff')";
+		localdiff="$(diff -ru #{diff_local_exclude} #{previous_release} #{latest_release}| egrep -v '^diff')";
+
+		# remove temporary directories.
+		rm -fr "/tmp/${latest}_#{diff_current}";
+		rm -fr "/tmp/${latest}_#{diff_prev}";
+
+		if [ "$scmdiff" != "$localdiff" ]; then
 			echo '========NOT SAME SOURCE========';
+			echo "========LOCAL========";
 			echo "$localdiff";
+			echo "========SCM========";
+			echo "$scmdiff";
 	    	exit 1;
 		else
 			echo '========SAME SOURCE========';
 		fi
 	CMD
 end
-         
+ 
