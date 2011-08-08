@@ -76,9 +76,9 @@ def diff_source
 
 		# diff
 		cd /tmp;
-		scmdiff_sed="s@^(\-\-\-|\+\+\+) (/tmp/${latest}_#{diff_prev}|/tmp/${latest}_#{diff_current})/(.+)\t([0-9]{4}\-[0-9]{2}\-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{1,10} \-[0-9]{4})@\1 \3@g";
+		scmdiff_sed="s@^(\\-\\-\\-|\\+\\+\\+) (/tmp/${latest}_#{diff_prev}|/tmp/${latest}_#{diff_current})/(.+)\t([0-9]{4}\-[0-9]{2}\-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{1,10} \-[0-9]{4})@\1 \3@g";
 		scmdiff="$(diff -ru #{diff_local_exclude} /tmp/${latest}_#{diff_prev} /tmp/${latest}_#{diff_current}| egrep -v '^diff'| sed -r \"${scmdiff_sed}\")";
-		localdiff_sed="s@^(\-\-\-|\+\+\+) (#{previous_release}|#{latest_release})/(.+)\t([0-9]{4}\-[0-9]{2}\-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{1,10} \-[0-9]{4})@\1 \3@g";
+		localdiff_sed="s@^(\\-\\-\\-|\\+\\+\\+) (#{previous_release}|#{latest_release})/(.+)\t([0-9]{4}\-[0-9]{2}\-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{1,10} \-[0-9]{4})@\1 \3@g";
 		localdiff="$(diff -ru #{diff_local_exclude} #{previous_release} #{latest_release}| egrep -v '^diff'| sed -r \"${localdiff_sed}\")";
 
 		# remove temporary directories.
