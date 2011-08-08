@@ -62,7 +62,7 @@ def diff_source
 	set :diff_current, ENV['DIFF_CURRENT']
 	set :diff_scm_exclude, ENV['DIFF_SCM_EXCLUDE'] || ".git"
 	set :diff_local_exclude, ENV['DIFF_LOCAL_EXCLUDE'] || "--exclude=.git --exclude=REVISION --exclude=log"
-	return unless ! ENV['DIFF'] || 1
+	return if (ENV['DIFF'] == 0)
 
 	run <<-CMD
 		echo 'finalize_update';
